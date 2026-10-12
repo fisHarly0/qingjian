@@ -1,21 +1,8 @@
 //! 注入与开关：词库、模糊音、双拼、翻译 / 学习 / 联想等 trait 实现的挂接，以及相应的只读访问。
 
 use super::aux_code::is_valid_aux_code_key;
-use super::{
-    DEFAULT_AUX_CODE_KEY, Engine, GlossFiller, InputLogger, Learner, ModeKeys, NEURAL_MARGIN,
-    NEURAL_WEIGHT, Predictor, RESCORE_CONTEXT_CHARS, Translator, UsageMeter, UsageSummary,
-    VocabularyTracker, marked_rest,
-};
-use crate::candidate::Language;
-use crate::correction::TypoCosts;
-use crate::emoji::EmojiTable;
+use super::*;
 use crate::engine::decoded::EngineDecoded;
-use crate::fuzzy::FuzzyRules;
-use crate::history::InputHistory;
-use crate::sentence::{Interpolation, LanguageModel, Personal, SentenceScorer};
-use crate::shuangpin::Scheme;
-use qingjian_dictionary::{AuxCodeLookup, CodeTable, Dictionary, WordList};
-use std::sync::Arc;
 
 impl Engine {
     /// 设置中文模式的标点转换。
@@ -357,7 +344,7 @@ impl Engine {
         self
     }
 
-    /// 静态语言模型（没接就是 [`crate::sentence::NoLanguageModel`]）：评测工具拿它按 [`crate::sentence::segment_text`] 切汉字文本。
+    /// 静态语言模型（没接就是 [`NoLanguageModel`]）：评测工具拿它按 [`crate::sentence::segment_text`] 切汉字文本。
     pub fn language_model(&self) -> &dyn LanguageModel {
         &*self.language_model
     }
@@ -413,6 +400,24 @@ impl Engine {
 
     pub fn mode_keys(&self) -> ModeKeys {
         self.modes
+    }
+
+    /// 候选后面配不配 emoji（配置 `[general] emoji`，缺省开）。
+    pub fn set_emoji_candidates(&mut self, on: bool) {
+        self.emoji_candidates = on;
+    }
+
+    pub fn emoji_candidates(&self) -> bool {
+        self.emoji_candidates
+    }
+
+    /// 中文模式下给不给英文词与补全（配置 `[general] english_in_chinese`，缺省开）；英文模式不受影响。
+    pub fn set_english_in_chinese(&mut self, on: bool) {
+        self.english_in_chinese = on;
+    }
+
+    pub fn english_in_chinese(&self) -> bool {
+        self.english_in_chinese
     }
 
     /// 中英混输里中文候选是否总排在英文词前面（配置 `[general] chinese_first`，缺省关）。
