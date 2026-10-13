@@ -118,6 +118,9 @@ pub struct Engine {
     /// 用户定义的固定位置文本。
     custom_phrases: Vec<crate::CustomPhrase>,
 
+    /// 中文模式下整段是英文词（或像英文词的开头）时给不给英文候选与补全（配置 `[general] english_in_chinese`，缺省开）。
+    english_in_chinese: bool,
+
     /// 中英混输时中文候选总在英文词前面（缺省关：拼音不像话的输入英文词排第一，常在中文模式里打英文词的人靠它）。
     chinese_first: bool,
 
@@ -258,7 +261,7 @@ pub struct Engine {
     /// emoji 表，没有就不出 emoji 候选。
     emoji: Option<EmojiTable>,
 
-    /// 每次查询的 emoji 候选上限，0 关闭；不超过原有上限。
+    /// 每次查询最多插几个 emoji（配置 `[general] emoji`，缺省 3）；0 不出 emoji，表照样加载。
     emoji_limit: usize,
 
     /// 辅码态：`None` 是拼音态，`Some` 是辅码态（空串 = 刚敲下触发键、码段还没开始）。
@@ -399,6 +402,7 @@ impl Engine {
             punctuation: Punctuation::default(),
             full_width_punctuation: true,
             custom_phrases: Vec::new(),
+            english_in_chinese: true,
             chinese_first: false,
             shift_letter_compose: false,
             predictor: Box::new(NoPredictor),

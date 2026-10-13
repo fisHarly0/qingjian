@@ -174,7 +174,7 @@ impl Engine {
             .question_body(self.composition.scope(), self.zhuyin);
         self.shuangpin
             .filter(|scheme| scheme.uses_semicolon())
-            .is_some_and(|scheme| scheme.decode(body).pending_initial())
+            .is_some_and(|scheme| scheme.decode_fuzzy(body, self.fuzzy).pending_initial())
     }
 
     /// 只用形码：码表挂着、拼音侧关着。
@@ -219,7 +219,7 @@ impl Engine {
             Some(EngineDecoded::Zhuyin(crate::zhuyin::decode(keys)))
         } else {
             self.shuangpin
-                .map(|scheme| EngineDecoded::Shuangpin(scheme.decode(keys)))
+                .map(|scheme| EngineDecoded::Shuangpin(scheme.decode_fuzzy(keys, self.fuzzy)))
         }
     }
 
@@ -420,6 +420,15 @@ impl Engine {
 
     pub fn mode_keys(&self) -> ModeKeys {
         self.modes
+    }
+
+    /// 中文模式下给不给英文词与补全（配置 `[general] english_in_chinese`，缺省开）；英文模式不受影响。
+    pub fn set_english_in_chinese(&mut self, on: bool) {
+        self.english_in_chinese = on;
+    }
+
+    pub fn english_in_chinese(&self) -> bool {
+        self.english_in_chinese
     }
 
     /// 中英混输里中文候选是否总排在英文词前面（配置 `[general] chinese_first`，缺省关）。
